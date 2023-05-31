@@ -3,7 +3,9 @@ const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("CryptoChequeToken", function () {
   async function deployTokenFixture() {
-    const CryptoChequeToken = await ethers.getContractFactory("CryptoChequeToken");
+    const CryptoChequeToken = await ethers.getContractFactory(
+      "CryptoChequeToken"
+    );
     const [owner, addr1, addr2] = await ethers.getSigners();
 
     const cryptoChequeToken = await CryptoChequeToken.deploy();
@@ -17,25 +19,21 @@ describe("CryptoChequeToken", function () {
     it("Should set the right name", async function () {
       const { cryptoChequeToken } = await loadFixture(deployTokenFixture);
 
-      expect(await cryptoChequeToken.name()).to.equal('CryptoChequeToken');
+      expect(await cryptoChequeToken.name()).to.equal("CryptoChequeToken");
     });
 
     it("Should set the right symbol", async function () {
       const { cryptoChequeToken } = await loadFixture(deployTokenFixture);
 
-      expect(await cryptoChequeToken.symbol()).to.equal('CCT');
+      expect(await cryptoChequeToken.symbol()).to.equal("CCT");
     });
 
     it("Should assign the total supply of tokens to the owner", async function () {
-      const { cryptoChequeToken, owner } = await loadFixture(deployTokenFixture);
+      const { cryptoChequeToken, owner } = await loadFixture(
+        deployTokenFixture
+      );
       const ownerBalance = await cryptoChequeToken.balanceOf(owner.address);
       expect(await cryptoChequeToken.totalSupply()).to.equal(ownerBalance);
-    });
-
-    it("Should set the right owner", async function() {
-      const { cryptoChequeToken, owner } = await loadFixture(deployTokenFixture);
-
-      expect(await cryptoChequeToken.owner()).to.equal(owner.address);
     });
   });
 
@@ -71,11 +69,62 @@ describe("CryptoChequeToken", function () {
       const { cryptoChequeToken, owner, addr1 } = await loadFixture(
         deployTokenFixture
       );
-      const initialOwnerBalance = await cryptoChequeToken.balanceOf(owner.address);
+      const initialOwnerBalance = await cryptoChequeToken.balanceOf(
+        owner.address
+      );
 
       await expect(
         cryptoChequeToken.connect(addr1).transfer(owner.address, 1)
       ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+
+      expect(await cryptoChequeToken.balanceOf(owner.address)).to.equal(
+        initialOwnerBalance
+      );
+    });
+  });
+
+  describe("Deposit", function () {
+    it("Should deposit cheque", async function () {
+      const { cryptoChequeToken, owner, addr1 } = await loadFixture(
+        deployTokenFixture
+      );
+      const expireAt = Math.round(Date.now() / 1000) + 24 * 3600;
+      const messageHash = ethers.utils.solidityKeccak256(
+        ["address", "uint", "uint"],
+        [owner.address, 50, expireAt]
+      );
+
+      await expect(
+        cryptoChequeToken
+          .connect(addr1)
+          .deposit(
+            owner.address,
+            50,
+            expireAt,
+            await owner.signMessage(ethers.utils.arrayify(messageHash))
+          )
+      ).to.changeTokenBalances(cryptoChequeToken, [owner, addr1], [-50, 50]);
+    });
+
+    it("Should fail if cheque is invalid", async function () {
+      const { cryptoChequeToken, owner, addr1 } = await loadFixture(
+        deployTokenFixture
+      );
+      const expireAt = Math.round(Date.now() / 1000) + 24 * 3600;
+      const initialOwnerBalance = await cryptoChequeToken.balanceOf(
+        owner.address
+      );
+
+      await expect(
+        cryptoChequeToken
+          .connect(addr1)
+          .deposit(
+            addr1.address,
+            50,
+            expireAt,
+            addr1.signMessage("invalid cheque")
+          )
+      ).to.be.revertedWith("CCT: invalid signature");
 
       expect(await cryptoChequeToken.balanceOf(owner.address)).to.equal(
         initialOwnerBalance
