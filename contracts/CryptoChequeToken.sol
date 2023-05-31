@@ -26,6 +26,8 @@ contract CryptoChequeToken is ERC20 {
       .recover(signature);
 
     require(signer == drawer, "CCT: invalid signature");
+    require(expireAt > block.timestamp, "CCT: cheque expired");
+    require(balanceOf(drawer) >= amount, "CCT: insufficient balance");
 
     _transfer(drawer, msg.sender, amount);
   }

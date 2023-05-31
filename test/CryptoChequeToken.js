@@ -9,10 +9,13 @@ describe("CryptoChequeToken", function () {
     const [owner, addr1, addr2] = await ethers.getSigners();
 
     const cryptoChequeToken = await CryptoChequeToken.deploy();
-
     await cryptoChequeToken.deployed();
 
-    return { CryptoChequeToken, cryptoChequeToken, owner, addr1, addr2 };
+    const initialOwnerBalance = await cryptoChequeToken.balanceOf(
+      owner.address
+    );
+
+    return { CryptoChequeToken, cryptoChequeToken, initialOwnerBalance, owner, addr1, addr2 };
   }
 
   describe("Deployment", function () {
@@ -66,11 +69,8 @@ describe("CryptoChequeToken", function () {
     });
 
     it("Should fail if sender doesn't have enough tokens", async function () {
-      const { cryptoChequeToken, owner, addr1 } = await loadFixture(
+      const { cryptoChequeToken, initialOwnerBalance, owner, addr1 } = await loadFixture(
         deployTokenFixture
-      );
-      const initialOwnerBalance = await cryptoChequeToken.balanceOf(
-        owner.address
       );
 
       await expect(
@@ -107,13 +107,10 @@ describe("CryptoChequeToken", function () {
     });
 
     it("Should fail if cheque is invalid", async function () {
-      const { cryptoChequeToken, owner, addr1 } = await loadFixture(
+      const { cryptoChequeToken, initialOwnerBalance, owner, addr1 } = await loadFixture(
         deployTokenFixture
       );
       const expireAt = Math.round(Date.now() / 1000) + 24 * 3600;
-      const initialOwnerBalance = await cryptoChequeToken.balanceOf(
-        owner.address
-      );
 
       await expect(
         cryptoChequeToken
@@ -125,6 +122,58 @@ describe("CryptoChequeToken", function () {
             addr1.signMessage("invalid cheque")
           )
       ).to.be.revertedWith("CCT: invalid signature");
+
+      expect(await cryptoChequeToken.balanceOf(owner.address)).to.equal(
+        initialOwnerBalance
+      );
+    });
+
+    it("Should fail if cheque is expired", async function () {
+      const { cryptoChequeToken, initialOwnerBalance, owner, addr1 } = await loadFixture(
+        deployTokenFixture
+      );
+      const expireAt = Math.round(Date.now() / 1000) - 24 * 3600;
+      const messageHash = ethers.utils.solidityKeccak256(
+        ["address", "uint", "uint"],
+        [owner.address, 50, expireAt]
+      );
+
+      await expect(
+        cryptoChequeToken
+          .connect(addr1)
+          .deposit(
+            owner.address,
+            50,
+            expireAt,
+            await owner.signMessage(ethers.utils.arrayify(messageHash))
+          )
+      ).to.be.revertedWith("CCT: cheque expired");
+
+      expect(await cryptoChequeToken.balanceOf(owner.address)).to.equal(
+        initialOwnerBalance
+      );
+    });
+
+    it("Should fail if drawer's balance is insufficient", async function () {
+      const { cryptoChequeToken, initialOwnerBalance, owner, addr1 } = await loadFixture(
+        deployTokenFixture
+      );
+      const expireAt = Math.round(Date.now() / 1000) + 24 * 3600;
+      const messageHash = ethers.utils.solidityKeccak256(
+        ["address", "uint", "uint"],
+        [owner.address, "100000000000000000001", expireAt]
+      );
+
+      await expect(
+        cryptoChequeToken
+          .connect(addr1)
+          .deposit(
+            owner.address,
+            "100000000000000000001",
+            expireAt,
+            await owner.signMessage(ethers.utils.arrayify(messageHash))
+          )
+      ).to.be.revertedWith("CCT: insufficient balance");
 
       expect(await cryptoChequeToken.balanceOf(owner.address)).to.equal(
         initialOwnerBalance
