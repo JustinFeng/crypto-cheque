@@ -1,3 +1,5 @@
+'use client';
+
 import Balances from "@/components/balances";
 import Cheques from "@/components/cheques";
 import Header from "@/components/header";

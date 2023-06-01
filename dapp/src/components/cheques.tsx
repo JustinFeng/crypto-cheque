@@ -1,7 +1,23 @@
+import { useState } from "react";
 import DepositChequeForm from "./depositChequeForm";
 import SignChequeForm from "./signChequeForm";
 
 export default function Cheques() {
+  const [isSignTab, setIsSignTab] = useState(true);
+
+  const onSignTabClick = () => {
+    console.log("clicked");
+    setIsSignTab(true);
+  };
+  const onDepositTabClick = () => setIsSignTab(false);
+
+  let form;
+  if (isSignTab) {
+    form = <SignChequeForm />;
+  } else {
+    form = <DepositChequeForm />;
+  }
+
   return (
     <section className="flex flex-col gap-4 flex-1">
       <h2>Sign & Deposit</h2>
@@ -11,29 +27,32 @@ export default function Cheques() {
           <ul className="flex flex-wrap -mb-px justify-evenly">
             <li className="mr-2">
               <a
-                href="#"
-                className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                onClick={onSignTabClick}
+                className={`${
+                  isSignTab
+                    ? "active border-transparent text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                    : "hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 hover:border-b-2"
+                } inline-block p-4 rounded-t-lg cursor-pointer`}
               >
                 Sign Cheque
               </a>
             </li>
             <li className="mr-2">
               <a
-                href="#"
-                className="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                aria-current="page"
+                onClick={onDepositTabClick}
+                className={`${
+                  isSignTab
+                    ? "hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 hover:border-b-2"
+                    : "active border-transparent text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                } inline-block p-4 rounded-t-lg cursor-pointer`}
               >
                 Deposit Cheque
               </a>
             </li>
           </ul>
         </div>
-        
-        <div className="p-4">
-          <SignChequeForm />
-          <hr className="p-4"/>
-          <DepositChequeForm />
-        </div>
+
+        <div className="p-4">{form}</div>
       </div>
     </section>
   );
