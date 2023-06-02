@@ -1,6 +1,6 @@
 "use client";
 
-import Balances from "@/components/balances";
+import Transfers from "@/components/transfers";
 import Banner from "@/components/banner";
 import Cheques from "@/components/cheques";
 import Header from "@/components/header";
@@ -36,7 +36,7 @@ export default function Home() {
         <Header />
         <TokenInfo />
         <div className="flex gap-4">
-          <Balances />
+          <Transfers />
           <Cheques />
         </div>
       </>

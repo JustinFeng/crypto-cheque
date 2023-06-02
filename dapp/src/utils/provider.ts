@@ -2,6 +2,7 @@ import { ethers, solidityPackedKeccak256, toBeArray } from "ethers";
 import { hexChainId, contractAddress, abi } from "./constant";
 
 const provider = new ethers.BrowserProvider(window.ethereum);
+const contract = new ethers.Contract(contractAddress, abi, provider);
 
 export function hasMetaMask() {
   return !!window.ethereum;
@@ -19,7 +20,6 @@ export async function switchNetwork() {
 }
 
 export async function tokenDetails() {
-  const contract = new ethers.Contract(contractAddress, abi, provider);
   return {
     name: await contract.name(),
     symbol: await contract.symbol(),
@@ -70,7 +70,20 @@ export async function depositCheque({
   expireAt,
   signature,
 }: CryptoCheque) {
-  const contract = new ethers.Contract(contractAddress, abi, await provider.getSigner());
+  const writeContract = new ethers.Contract(
+    contractAddress,
+    abi,
+    await provider.getSigner()
+  );
 
-  await contract.deposit(drawer, chequeId, amount, expireAt, signature);
+  await writeContract.deposit(drawer, chequeId, amount, expireAt, signature);
+}
+
+export async function listenToTransferEvent(
+  onTransfer: (from: string, to: string, amount: string, id: string) => void
+) {
+  contract.on("Transfer", (from, to, amount, event) => {
+    console.log(from, to, amount, event);
+    onTransfer(from, to, amount, event.id);
+  });
 }
