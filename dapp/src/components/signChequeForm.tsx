@@ -1,32 +1,26 @@
-import { signCheque } from "@/utils/provider";
-import { SyntheticEvent, useState } from "react";
+import { Dispatch, SetStateAction, SyntheticEvent } from "react";
 
-export default function SignChequeForm() {
-  const [chequeId, setChequeId] = useState("");
-  const [amount, setAmount] = useState("");
-  const [expireAt, setExpireAt] = useState("");
-  const [cryptoCheque, setCryptoCheque] = useState("");
+interface Props {
+  chequeId: string;
+  amount: string;
+  expireAt: string;
+  cryptoCheque: string;
+  setChequeId: Dispatch<SetStateAction<string>>;
+  setAmount: Dispatch<SetStateAction<string>>;
+  setExpireAt: Dispatch<SetStateAction<string>>;
+  onSign: (e: SyntheticEvent) => {};
+}
 
-  const expireAtTimestamp = new Date(expireAt).getTime() / 1000
-
-  const onSign = async (e: SyntheticEvent) => {
-    e.preventDefault();
-
-    const signature = await signCheque(
-      chequeId,
-      amount,
-      expireAtTimestamp
-    );
-
-    const cryptoCheque = {
-      chequeId,
-      amount,
-      expireAt: expireAtTimestamp,
-      signature,
-    };
-    setCryptoCheque(JSON.stringify(cryptoCheque, null, 2));
-  };
-
+export default function SignChequeForm({
+  chequeId,
+  amount,
+  expireAt,
+  cryptoCheque,
+  setChequeId,
+  setAmount,
+  setExpireAt,
+  onSign,
+}: Props) {
   return (
     <form>
       <div className="relative z-0 w-full mb-6 group">
