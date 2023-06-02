@@ -1,4 +1,4 @@
-import { tokenContract } from "@/utils/provider";
+import { tokenDetails } from "@/utils/provider";
 import { useEffect, useState } from "react";
 
 export default function TokenInfo() {
@@ -8,9 +8,10 @@ export default function TokenInfo() {
   
   useEffect(() => {
     async function loadTokenInfo() {
-      setName(await tokenContract.name())
-      setSymbol(await tokenContract.symbol())
-      setTotalSupply(String(await tokenContract.totalSupply()))
+      const { name, symbol, totalSupply} = await tokenDetails()
+      setName(name)
+      setSymbol(symbol)
+      setTotalSupply(String(totalSupply))
     }
 
     loadTokenInfo();

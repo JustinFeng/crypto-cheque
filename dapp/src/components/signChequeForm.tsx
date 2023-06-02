@@ -1,4 +1,19 @@
+import {useEffect, useState} from "react";
+
 export default function SignChequeForm() {
+  const [chequeId, setChequeId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [expireAt, setExpireAt] = useState('');
+  const [cryptoCheque, setCryptoCheque] = useState('');
+
+  useEffect(() => {
+    setCryptoCheque(JSON.stringify({
+      chequeId,
+      amount,
+      expireAt: (new Date(expireAt)).getTime() / 1000,
+    }, null, 2));
+  }, [chequeId, amount, expireAt])
+
   return (
     <form>
       <div className="relative z-0 w-full mb-6 group">
@@ -6,6 +21,10 @@ export default function SignChequeForm() {
           type="text"
           name="chequeId"
           id="chequeId"
+          value={chequeId}
+          onChange={e => {
+            setChequeId(e.target.value);
+          }}
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
           placeholder=" "
           required
@@ -22,6 +41,10 @@ export default function SignChequeForm() {
           type="number"
           name="amount"
           id="amount"
+          value={amount}
+          onChange={e => {
+            setAmount(e.target.value);
+          }}
           min="1"
           step="1"
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -40,6 +63,10 @@ export default function SignChequeForm() {
           type="date"
           name="expireAt"
           id="expireAt"
+          value={expireAt}
+          onChange={e => {
+            setExpireAt(e.target.value);
+          }}
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
           placeholder=" "
           required
@@ -67,9 +94,13 @@ export default function SignChequeForm() {
         <textarea
           name="cryptoCheque"
           id="cryptoCheque"
+          value={cryptoCheque}
+          onChange={e => {
+            setCryptoCheque(e.target.value);
+          }}
           rows={8}
           readOnly
-          className="mt-2 block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-gray-300 dark:text-white dark:border-gray-600 border rounded-lg shadow dark:bg-gray-800"
+          className="mt-2 block p-4 w-full text-sm text-gray-900 bg-transparent border-gray-300 dark:text-white dark:border-gray-600 border rounded-lg shadow dark:bg-gray-800"
           placeholder=" "
         />
       </div>
