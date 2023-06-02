@@ -1,7 +1,7 @@
 import { SyntheticEvent, useState } from "react";
 import DepositChequeForm from "./depositChequeForm";
 import SignChequeForm from "./signChequeForm";
-import { signCheque } from "@/utils/provider";
+import { depositCheque, signCheque } from "@/utils/provider";
 
 export default function Cheques() {
   const [isSignTab, setIsSignTab] = useState(true);
@@ -11,26 +11,22 @@ export default function Cheques() {
   const [expireAt, setExpireAt] = useState("");
   const [cryptoCheque, setCryptoCheque] = useState("");
 
-  const expireAtTimestamp = new Date(expireAt).getTime() / 1000;
-
   const onSign = async (e: SyntheticEvent) => {
     e.preventDefault();
 
-    const signature = await signCheque(chequeId, amount, expireAtTimestamp);
+    const expireAtTimestamp = new Date(expireAt).getTime() / 1000;
+    const cryptoCheque = await signCheque(chequeId, amount, expireAtTimestamp);
 
-    const cryptoCheque = {
-      chequeId,
-      amount,
-      expireAt: expireAtTimestamp,
-      signature,
-    };
     setCryptoCheque(JSON.stringify(cryptoCheque, null, 2));
   };
 
-  const onSignTabClick = () => {
-    console.log("clicked");
-    setIsSignTab(true);
+  const onDeposit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+
+    await depositCheque(JSON.parse(cryptoCheque));
   };
+
+  const onSignTabClick = () => setIsSignTab(true);
   const onDepositTabClick = () => setIsSignTab(false);
 
   let form;
@@ -47,7 +43,12 @@ export default function Cheques() {
     };
     form = <SignChequeForm {...props} />;
   } else {
-    form = <DepositChequeForm />;
+    const props = {
+      cryptoCheque,
+      setCryptoCheque,
+      onDeposit,
+    };
+    form = <DepositChequeForm {...props} />;
   }
 
   return (

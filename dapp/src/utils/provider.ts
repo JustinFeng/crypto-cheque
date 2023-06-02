@@ -1,8 +1,7 @@
 import { ethers, solidityPackedKeccak256, toBeArray } from "ethers";
-import { hexChainId, contractAddress, ERC20Abi } from "./constant";
+import { hexChainId, contractAddress, abi } from "./constant";
 
 const provider = new ethers.BrowserProvider(window.ethereum);
-const contract = new ethers.Contract(contractAddress, ERC20Abi, provider);
 
 export function hasMetaMask() {
   return !!window.ethereum;
@@ -20,6 +19,7 @@ export async function switchNetwork() {
 }
 
 export async function tokenDetails() {
+  const contract = new ethers.Contract(contractAddress, abi, provider);
   return {
     name: await contract.name(),
     symbol: await contract.symbol(),
@@ -32,12 +32,45 @@ export async function connect() {
   return accounts[0];
 }
 
-export async function signCheque(chequeId: string, amount: string, expireAt: number) {
+export async function signCheque(
+  chequeId: string,
+  amount: string,
+  expireAt: number
+) {
   const signer = await provider.getSigner();
+  const drawer = await signer.getAddress();
   const messageHash = solidityPackedKeccak256(
     ["address", "uint", "uint", "uint"],
-    [await signer.getAddress(), chequeId, amount, expireAt]
+    [drawer, chequeId, amount, expireAt]
   );
 
-  return await signer.signMessage(toBeArray(messageHash))
+  const signature = await signer.signMessage(toBeArray(messageHash));
+
+  return {
+    drawer,
+    chequeId,
+    amount,
+    expireAt,
+    signature,
+  };
+}
+
+interface CryptoCheque {
+  drawer: string;
+  chequeId: string;
+  amount: string;
+  expireAt: number;
+  signature: string;
+}
+
+export async function depositCheque({
+  drawer,
+  chequeId,
+  amount,
+  expireAt,
+  signature,
+}: CryptoCheque) {
+  const contract = new ethers.Contract(contractAddress, abi, await provider.getSigner());
+
+  await contract.deposit(drawer, chequeId, amount, expireAt, signature);
 }
