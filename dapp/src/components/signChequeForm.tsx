@@ -1,18 +1,31 @@
-import {useEffect, useState} from "react";
+import { signCheque } from "@/utils/provider";
+import { SyntheticEvent, useState } from "react";
 
 export default function SignChequeForm() {
-  const [chequeId, setChequeId] = useState('');
-  const [amount, setAmount] = useState('');
-  const [expireAt, setExpireAt] = useState('');
-  const [cryptoCheque, setCryptoCheque] = useState('');
+  const [chequeId, setChequeId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [expireAt, setExpireAt] = useState("");
+  const [cryptoCheque, setCryptoCheque] = useState("");
 
-  useEffect(() => {
-    setCryptoCheque(JSON.stringify({
+  const expireAtTimestamp = new Date(expireAt).getTime() / 1000
+
+  const onSign = async (e: SyntheticEvent) => {
+    e.preventDefault();
+
+    const signature = await signCheque(
       chequeId,
       amount,
-      expireAt: (new Date(expireAt)).getTime() / 1000,
-    }, null, 2));
-  }, [chequeId, amount, expireAt])
+      expireAtTimestamp
+    );
+
+    const cryptoCheque = {
+      chequeId,
+      amount,
+      expireAt: expireAtTimestamp,
+      signature,
+    };
+    setCryptoCheque(JSON.stringify(cryptoCheque, null, 2));
+  };
 
   return (
     <form>
@@ -22,7 +35,7 @@ export default function SignChequeForm() {
           name="chequeId"
           id="chequeId"
           value={chequeId}
-          onChange={e => {
+          onChange={(e) => {
             setChequeId(e.target.value);
           }}
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -42,7 +55,7 @@ export default function SignChequeForm() {
           name="amount"
           id="amount"
           value={amount}
-          onChange={e => {
+          onChange={(e) => {
             setAmount(e.target.value);
           }}
           min="1"
@@ -64,7 +77,7 @@ export default function SignChequeForm() {
           name="expireAt"
           id="expireAt"
           value={expireAt}
-          onChange={e => {
+          onChange={(e) => {
             setExpireAt(e.target.value);
           }}
           className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -79,7 +92,7 @@ export default function SignChequeForm() {
         </label>
       </div>
       <button
-        type="submit"
+        onClick={onSign}
         className="mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
         Sign
@@ -95,9 +108,6 @@ export default function SignChequeForm() {
           name="cryptoCheque"
           id="cryptoCheque"
           value={cryptoCheque}
-          onChange={e => {
-            setCryptoCheque(e.target.value);
-          }}
           rows={8}
           readOnly
           className="mt-2 block p-4 w-full text-sm text-gray-900 bg-transparent border-gray-300 dark:text-white dark:border-gray-600 border rounded-lg shadow dark:bg-gray-800"

@@ -1,4 +1,4 @@
-import { ethers, solidityPackedKeccak256 } from "ethers";
+import { ethers, solidityPackedKeccak256, toBeArray } from "ethers";
 import { hexChainId, contractAddress, ERC20Abi } from "./constant";
 
 const provider = new ethers.BrowserProvider(window.ethereum);
@@ -32,10 +32,12 @@ export async function connect() {
   return accounts[0];
 }
 
-// export async SignCheque() {
-//   const messageHash = solidityPackedKeccak256(
-//     ["address", "uint", "uint", "uint"],
-//     [owner.address, 1, "100000000000000000001", expireAt]
-//   );
-//   signer.signMessage()
-// }
+export async function signCheque(chequeId: string, amount: string, expireAt: number) {
+  const signer = await provider.getSigner();
+  const messageHash = solidityPackedKeccak256(
+    ["address", "uint", "uint", "uint"],
+    [await signer.getAddress(), chequeId, amount, expireAt]
+  );
+
+  return await signer.signMessage(toBeArray(messageHash))
+}
