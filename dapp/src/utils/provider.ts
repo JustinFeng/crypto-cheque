@@ -80,10 +80,9 @@ export async function depositCheque({
 }
 
 export async function listenToTransferEvent(
-  onTransfer: (from: string, to: string, amount: string, id: string) => void
+  onTransfer: (from: string, to: string, amount: number, id: string) => void
 ) {
-  contract.on("Transfer", (from, to, amount, event) => {
-    console.log(from, to, amount, event);
-    onTransfer(from, to, amount, event.id);
+  contract.on("Transfer", (from, to, amount) => {
+    onTransfer(from, to, amount, `${from.slice(-7)}-${to.slice(-7)}-${Date.now()}`);
   });
 }

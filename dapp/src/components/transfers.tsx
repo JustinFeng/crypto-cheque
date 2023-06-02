@@ -10,14 +10,21 @@ export interface Transfer {
 
 export default function Transfers() {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [listening, setListening] = useState(false);
 
   useEffect(() => {
-    listenToTransferEvent(
-      (from: string, to: string, amount: string, id: string) => {
-        setTransfers((ts) => [{ from, to, amount, id }, ...ts]);
-      }
-    );
-  }, []);
+    if (!listening) {
+      listenToTransferEvent(
+        (from: string, to: string, amount: number, id: string) => {
+          setTransfers((ts) => [
+            { from, to, amount: String(amount), id },
+            ...ts,
+          ]);
+        }
+      );
+      setListening(true);
+    }
+  }, [listening]);
 
   return (
     <section className="flex flex-col gap-4 flex-1">
