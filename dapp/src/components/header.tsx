@@ -1,4 +1,8 @@
-import { connect, getAccounts, listenToAccountsChanged } from "@/utils/provider";
+import {
+  connect,
+  getAccounts,
+  listenToAccountsChanged,
+} from "@/utils/provider";
 import { useEffect, useState } from "react";
 
 export default function Header() {

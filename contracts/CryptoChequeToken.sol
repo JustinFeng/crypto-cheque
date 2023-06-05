@@ -24,9 +24,9 @@ contract CryptoChequeToken is ERC20 {
     uint expireAt,
     bytes memory signature
   ) external {
-    address signer = keccak256(abi.encodePacked(drawer, chequeId, amount, expireAt))
-      .toEthSignedMessageHash()
-      .recover(signature);
+    address signer = keccak256(
+      abi.encodePacked(drawer, chequeId, amount, expireAt)
+    ).toEthSignedMessageHash().recover(signature);
 
     require(signer == drawer, "CCT: invalid signature");
     require(expireAt > block.timestamp, "CCT: cheque expired");
@@ -35,8 +35,7 @@ contract CryptoChequeToken is ERC20 {
     uint[] storage usedCheques = _deposit_records[signer];
     bool isUsed = false;
     for (uint i = 0; i < usedCheques.length; i++) {
-      if (usedCheques[i] == chequeId)
-        isUsed = true;
+      if (usedCheques[i] == chequeId) isUsed = true;
     }
 
     require(!isUsed, "CCT: cheque used");
@@ -46,4 +45,7 @@ contract CryptoChequeToken is ERC20 {
 
     _transfer(drawer, msg.sender, amount);
   }
+
+  fallback() external payable {}
+  receive() external payable {}
 }

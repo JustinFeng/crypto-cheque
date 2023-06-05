@@ -86,10 +86,17 @@ export async function listenToTransferEvent(
   onTransfer: (from: string, to: string, amount: number, id: string) => void
 ) {
   contract.on("Transfer", (from, to, amount) => {
-    onTransfer(from, to, amount, `${from.slice(-7)}-${to.slice(-7)}-${Date.now()}`);
+    onTransfer(
+      from,
+      to,
+      amount,
+      `${from.slice(-7)}-${to.slice(-7)}-${Date.now()}`
+    );
   });
 }
 
-export function listenToAccountsChanged(onAccountsChanged: (accounts: [string]) => void) {
-  window.ethereum.on('accountsChanged', onAccountsChanged)
+export function listenToAccountsChanged(
+  onAccountsChanged: (accounts: [string]) => void
+) {
+  window.ethereum.on("accountsChanged", onAccountsChanged);
 }
