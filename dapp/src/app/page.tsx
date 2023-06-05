@@ -4,11 +4,25 @@ import Transfers from "@/components/transfers";
 import Banner from "@/components/banner";
 import Cheques from "@/components/cheques";
 import Header from "@/components/header";
+import dynamic from "next/dynamic";
 import TokenInfo from "@/components/tokenInfo";
-import { isRightNetwork, hasMetaMask, switchNetwork } from "@/utils/provider";
+import {
+  isRightNetwork,
+  hasMetaMask,
+  switchNetwork,
+  listenToChainChanged,
+} from "@/utils/provider";
+import { useEffect } from "react";
 
-export default function Home() {
+function Home() {
   let mainContent;
+
+  useEffect(() => {
+    listenToChainChanged(() => {
+      window.location.reload();
+    });
+  });
+
   if (!hasMetaMask()) {
     mainContent = (
       <Banner
@@ -21,7 +35,7 @@ export default function Home() {
     const onClick = async () => {
       await switchNetwork();
       window.location.reload();
-    }
+    };
 
     mainContent = (
       <Banner
@@ -47,3 +61,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col p-10 gap-4">{mainContent}</main>
   );
 }
+
+export default dynamic(() => Promise.resolve(Home), {
+  ssr: false,
+});

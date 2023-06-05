@@ -1,8 +1,13 @@
 import { ethers, solidityPackedKeccak256, toBeArray } from "ethers";
 import { hexChainId, contractAddress, abi } from "./constant";
 
-const provider = new ethers.BrowserProvider(window.ethereum);
-const contract = new ethers.Contract(contractAddress, abi, provider);
+let provider: ethers.BrowserProvider;
+let contract: ethers.Contract;
+
+if (typeof window !== 'undefined') {
+  provider = new ethers.BrowserProvider(window.ethereum);
+  contract = new ethers.Contract(contractAddress, abi, provider);
+}
 
 export function hasMetaMask() {
   return !!window.ethereum;
@@ -99,4 +104,10 @@ export function listenToAccountsChanged(
   onAccountsChanged: (accounts: [string]) => void
 ) {
   window.ethereum.on("accountsChanged", onAccountsChanged);
+}
+
+export function listenToChainChanged(
+  onChainChanged: (chainId: string) => void
+) {
+  window.ethereum.on("chainChanged", onChainChanged);
 }
