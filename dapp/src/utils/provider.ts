@@ -28,8 +28,11 @@ export async function tokenDetails() {
 }
 
 export async function connect() {
-  const accounts = await provider.send("eth_requestAccounts", []);
-  return accounts[0];
+  return await provider.send("eth_requestAccounts", []);
+}
+
+export async function getAccounts() {
+  return await provider.send("eth_accounts", []);
 }
 
 export async function signCheque(
@@ -85,4 +88,8 @@ export async function listenToTransferEvent(
   contract.on("Transfer", (from, to, amount) => {
     onTransfer(from, to, amount, `${from.slice(-7)}-${to.slice(-7)}-${Date.now()}`);
   });
+}
+
+export function listenToAccountsChanged(onAccountsChanged: (accounts: [string]) => void) {
+  window.ethereum.on('accountsChanged', onAccountsChanged)
 }

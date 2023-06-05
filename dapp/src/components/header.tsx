@@ -1,13 +1,23 @@
-import { connect } from "@/utils/provider";
-import { useState } from "react";
+import { connect, getAccounts, listenToAccountsChanged } from "@/utils/provider";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const [address, setAddress] = useState("");
 
-  const onClick = async () => {
-    const account = await connect();
-    setAddress(account.slice(-7));
+  const onAccountsChanged = (accounts: [string]) => {
+    const account = accounts[0];
+    setAddress(account);
   };
+
+  useEffect(() => {
+    async function loadAccount() {
+      onAccountsChanged(await getAccounts());
+    }
+    loadAccount();
+    listenToAccountsChanged(onAccountsChanged);
+  }, []);
+
+  const onClick = async () => onAccountsChanged(await connect());
 
   return (
     <header className="flex justify-between">
@@ -15,7 +25,7 @@ export default function Header() {
       {address ? (
         <div className="bg-white border border-gray-200 rounded-lg shadow py-1 px-2 dark:bg-gray-800 dark:border-gray-700">
           <span className="text-green-400 mr-2">●</span>
-          {address}
+          {address.slice(-7)}
         </div>
       ) : (
         <button

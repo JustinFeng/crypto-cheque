@@ -102,7 +102,7 @@ export default function SignChequeForm({
           name="cryptoCheque"
           id="cryptoCheque"
           value={cryptoCheque}
-          rows={8}
+          rows={9}
           readOnly
           className="mt-2 block p-4 w-full text-sm text-gray-900 bg-transparent border-gray-300 dark:text-white dark:border-gray-600 border rounded-lg shadow dark:bg-gray-800"
           placeholder=" "
