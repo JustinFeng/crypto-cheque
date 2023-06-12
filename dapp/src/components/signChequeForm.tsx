@@ -91,7 +91,7 @@ export default function SignChequeForm({
       >
         Sign
       </button>
-      <div className="relative z-0 w-full mb-6 group">
+      <div className="relative z-0 w-full group">
         <label
           htmlFor="cryptoCheque"
           className="text-sm text-gray-500 dark:text-gray-400 -z-10 origin-[0]"
